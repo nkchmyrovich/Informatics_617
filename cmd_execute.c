@@ -40,15 +40,28 @@ int main(int argc, char** argv) {
 		pid_t pid = fork();
 		if (pid == 0) {
 			sleep(atoi(tokens[token_count-1]));
+			/*
+			fixit: зачем вам нужно копирование в отдельный массив params?
+			чем tokens + 1 не подойдет?
+			*/
 			execvp(tokens[0], params);
 			token_count = 0;
 			param_count = 0;
 			memset(tokens, '\0', len);
 			memset(params, '\0', len);
 		} else {
+			/*
+			fixit: у вас как-то странно получается: если процесс, которые вы запустили exec'ом "завис", то
+			вы не запустите следующую задачу из списка вовремя
+			*/
 			wait();
 		}
 	}
+	/*
+	fixit: допустим ни одна задача не смогла запуститься с помощью exec ...
+	посчитайте сколько раз был вызван calloc и сколько раз вы освободили память ...
+	эти числа должны совпадать
+	*/
 	for (size_t i = 0; i < len; i++) {
 		free(lines[i]);
 		free(tokens[i]);
