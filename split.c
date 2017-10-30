@@ -21,6 +21,10 @@ int main(int argc, char **argv) {
 	for (size_t i = 0; i < token_count; i++) {
 		printf("%s ", tokens[i]);
 	}
+	/*
+	fixit: количество выделений памяти (calloc, malloc и т.п.) должно совпадать с количеством free
+	вы память забыли освободить.
+	*/
 	system("PAUSE");
 	return 0;
 }
@@ -28,6 +32,10 @@ int main(int argc, char **argv) {
 void Split(char* string, char* delimiters, char** tokens, int* tokensCount) {
 	size_t len = strlen(string);
 	int token_count = 0;
+	/*
+	прочитайте внимательнее, как strtok работает.
+	нужно ли выделять дополнительную память?
+	*/
 	tokens[token_count] = (char*)calloc(len, sizeof(char));
 	tokens[token_count++] = strtok(string, delimiters);
 	do {
