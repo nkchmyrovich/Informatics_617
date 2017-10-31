@@ -47,5 +47,9 @@ int main(int argc, char **argv)
 	char* buf = "ABCDEFDESR";
 	Split(buf, 'D');
 	system("PAUSE");
+	/*
+	fixit: нужно почистить всю память, которые выделяли calloc'ами.
+	p.s. почитайте, что realloc делает
+	*/
 	return 0;
 }
