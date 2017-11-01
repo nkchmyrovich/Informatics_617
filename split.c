@@ -9,9 +9,9 @@ void Split(char* string, char* delimiters, char** tokens, int* tokensCount);
 int main(int argc, char **argv) {
 	char* string = (char*)calloc(N, sizeof(char));
 	char* delimiter = (char*)calloc(N, sizeof(char));
-	scanf("%[^\n]s ", string);
+	fgets(string, N, stdin);
 	fflush(stdin);
-	scanf("%[^\n]s ", delimiter);
+	fgets(delimiter, N, stdin);
 	if (!(delimiter && string)) {
 		return -1;
 	}
@@ -21,6 +21,9 @@ int main(int argc, char **argv) {
 	for (size_t i = 0; i < token_count; i++) {
 		printf("%s ", tokens[i]);
 	}
+	free(string);
+	free(delimiter);
+	free(tokens);
 	system("PAUSE");
 	return 0;
 }
@@ -28,11 +31,8 @@ int main(int argc, char **argv) {
 void Split(char* string, char* delimiters, char** tokens, int* tokensCount) {
 	size_t len = strlen(string);
 	int token_count = 0;
-	tokens[token_count] = (char*)calloc(len, sizeof(char));
 	tokens[token_count++] = strtok(string, delimiters);
-	do {
-		tokens[token_count] = (char*)calloc(len, sizeof(char));
-	} while ((tokens[token_count++] = strtok(NULL, delimiters)) != NULL && token_count < len);
+	while ((tokens[token_count++] = strtok(NULL, delimiters)) != NULL && token_count < len) {};
 	if (!tokens[token_count-1]) token_count--;
 	*tokensCount = token_count;
 }
