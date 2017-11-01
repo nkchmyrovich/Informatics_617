@@ -6,6 +6,13 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+/*
+дайте переменным и ф-ям чуть более осмысленные названия:
+mythread_1 -> receiveMessages
+mythread_2 -> sendMessages
+и т.п.
+можно вычисление 1 - ind вынести в отдельную ф-и и дать ей "говорящее" название 
+*/
 
 #define MAX_CHAR_COUNT 255
 
@@ -52,9 +59,9 @@ void* mythread_2 (void* ind) {
 int main (int argv, char** argc) {
 	int ind = atoi(argc[1]);
 	pthread_t thid_1, thid_2;
-	if ((access(files[ind], F_OK) != 0) && (access(files[1-ind], F_OK) != 0)) {
+	if ((access(files[ind], F_OK) != 0) && (access(files[1 - ind], F_OK) != 0)) {
 		if (mknod(files[ind], S_IFIFO | 0666, 0) < 0) return 1;
-		if (mknod(files[1-ind], S_IFIFO | 0666, 0) < 0) return 1;
+		if (mknod(files[1 - ind], S_IFIFO | 0666, 0) < 0) return 1;
 	}
 	if (pthread_create(&thid_1, NULL, mythread_1, &ind) != 0) {
 		printf("ERROR: in pthread_create_1");
