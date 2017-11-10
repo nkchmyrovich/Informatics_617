@@ -7,75 +7,132 @@
 #define N 10000
 
 /*
-зачем нужна переменная thread_count?
-*/
+thread_num = 50 
 
-/*
-добавьте комментарий в код с результатов замеров времени исполнения
-в зависимости от числа нитей
+real	0m7.022s
+user	0m27.232s
+sys	0m0.000s
+
+thread_num = 100
+
+real	0m7.103s
+user	0m27.320s
+sys	0m0.012s
+
+thread_num = 200
+
+real	0m6.871s
+user	0m26.244s
+sys	0m0.032s
+
+thread_num = 300
+
+real	0m7.405s
+user	0m24.768s
+sys	0m0.016s
+
+thread_num = 400
+
+real	0m8.108s
+user	0m23.384s
+sys	0m0.024s
+
+
+thread_num = 500
+
+real	0m6.991s
+user	0m26.416s
+sys	0m0.044s
+
+
+thread_num = 600
+
+real	0m10.230s
+user	0m19.912s
+sys	0m0.056s
+
+thread_num = 700
+
+real	0m8.803s
+user	0m21.404s
+sys	0m0.044s
+
+thread_num = 800
+
+real	0m8.013s
+user	0m22.496s
+sys	0m0.052s
+
+thread_num = 900
+
+real	0m8.013s
+user	0m22.496s
+sys	0m0.052s      
 */
-size_t thread_count = 0;
 
 typedef struct {
-	float* AMatrix;
-	float* BMatrix;
-	float* CMatrix;
-	size_t* str_nums;
-	size_t thread_num;
+        float* AMatrix;
+        float* BMatrix;
+        float* CMatrix;
+        int str_start;
+	int str_end;
 } ThreadArg;
 
 void* MulMatrixThread(void* args) {
-	/*
-	один раз бы написали
 	ThreadArg* threadArg = (ThreadArg*)args;
-	чтобы дальше в каждом месте не писать приведение к типу
-	*/
-	int str_num = ((ThreadArg*)args)->str_nums[thread_count];
-	thread_count++;
-	int thread_num = ((ThreadArg*)args)->thread_num;
-	size_t str_end = str_num + thread_num;
-        if (thread_count == thread_num) str_end = N;
-	for (size_t i = str_num; i < str_end; i++) {
-		for (size_t j = 0; j < N; j++) {
-			for (size_t k = 0; k < N; k++) {
-				((ThreadArg*)args)->CMatrix[i*N+j] +=
-					((ThreadArg*)args)->AMatrix[i*N+k] * ((ThreadArg*)args)->BMatrix[k*N+j];
-			}
-		}
-	}
-	return NULL;
+	int str_start = threadArg->str_start;
+        int str_end = threadArg->str_end;
+	printf("str_start: %d\n", str_start);
+	printf("str_end: %d\n", str_end);
+        for (size_t i = str_start; i < str_end; i++) {
+                for (size_t j = 0; j < N; j++) {
+                        for (size_t k = 0; k < N; k++) {
+                                threadArg->CMatrix[i*N+j] +=
+                                        threadArg->AMatrix[i*N+k] * threadArg->BMatrix[k*N+j];
+                        }
+                }
+        }
+	printf("end\n");
 }
 
 int main (int argv, char** argc) {
-	ThreadArg args = {};
-	size_t thread_num = atoi(argc[1]);
-	args.thread_num = thread_num;
-	args.str_nums = (size_t*)calloc(N, sizeof(size_t));
-	/*
-	fixit: вы неявно предполагаете, что N делится на thread_num
-	*/
-	for (size_t i = 0; i < thread_num; i++) 
-		args.str_nums[i] = (int)(N/thread_num) * i;
+        size_t thread_num = atoi(argc[1]);
+	ThreadArg* args = (ThreadArg*)calloc(thread_num, sizeof(ThreadArg));
+	div_t thread_num_div = div(N, thread_num);
+	int first_str_num = thread_num_div.quot + thread_num_div.rem;
+	args[0].str_start = 0;
+	args[0].str_end =  first_str_num;
+        for (size_t i = 0; i < thread_num-1; i++) {
+		args[i+1].str_start = first_str_num + i * thread_num_div.quot;
+		args[i+1].str_end = first_str_num + (i + 1) * thread_num_div.quot;
+	}
+	printf("last str_end: %d\n", args[thread_num-1].str_end);
 	pthread_t* thids = (pthread_t*)calloc(N, sizeof(pthread_t));
-	args.AMatrix = (float*)calloc(N * N, sizeof(float));
-	args.BMatrix = (float*)calloc(N * N, sizeof(float));
-	args.CMatrix = (float*)calloc(N * N, sizeof(float));
-	/*
-	лучше бы случайными числами матрицы заполнили
-	*/
-	for (size_t i = 0; i < N; i++) {
-		for(size_t j = 0; j < N; j++) {
-			args.BMatrix[N * i + j] = 0;
-			args.AMatrix[N * i + j] = (float)rand();
-			args.CMatrix[N * i + j] = 0;
-			if (i == j) args.BMatrix[N * i + j] = 1;
-		}
-	}
-	int str_num = 0;
+        float* AMatrix = (float*)calloc(N * N, sizeof(float));
+        float* BMatrix = (float*)calloc(N * N, sizeof(float));
+        float* CMatrix = (float*)calloc(N * N, sizeof(float)); 
+        for (size_t i = 0; i < N; i++) {
+                for(size_t j = 0; j < N; j++) {
+                        BMatrix[N*i+j] = (float)rand();
+                        AMatrix[N*i+j] = (float)rand();
+                        CMatrix[N*i+j] = 0;
+                }
+        }
 	for (size_t i = 0; i < thread_num; i++) {
-		pthread_create(&thids[i], NULL, MulMatrixThread, (void*)&args);
+                args[i].AMatrix = AMatrix;
+                args[i].BMatrix = BMatrix;
+                args[i].CMatrix = CMatrix;
+        }
+        for (size_t i = 0; i < thread_num; i++) 
+                pthread_create(&thids[i], NULL, MulMatrixThread, (void*)&args[i]);
+        printf("hello");
+	for (size_t i = 0; i < thread_num; i++)
+                pthread_join(thids[i], NULL);
+	for (size_t i = 0; i < N; i++) {
+		for (size_t j = 0; j < N; j++) {
+			printf("%g ", CMatrix[N*i+j]);
+		}
+		printf("\n");
 	}
-	for (size_t i = 0; i < N/thread_num; i++) 
-		pthread_join(thids[i], NULL); 
-	return 0;
+        return 0;
 }
