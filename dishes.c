@@ -11,6 +11,8 @@
 #define MAX_CHAR_NUMBER 255
 #define TABLE_LIMIT 2
 
+const char* end_string = "finish";
+
 struct sembuf mybuf;
 
 typedef struct {
@@ -101,12 +103,10 @@ int main () {
 					}
 					break;
 				}
-			//memset(washer_buf_type, '\0', fsize_washer);
-			//memset(washer_buf_count, '\0', fsize_washer);
                 	i++;
 			}
 		}
-		write(fd[1], "finish\0", 7);
+		write(fd[1], end_string, strlen(end_string));
 		wait(NULL);
 	} 
 	if (pid == 0) {
@@ -120,10 +120,20 @@ int main () {
                                 break;
                          }
 		}
-		//memset(wiper_buf_type, '\0', fsize_wiper);
 		read(fd[0], wiper_buf_type, MAX_CHAR_NUMBER);
 		}
 	} 
 	semctl(semid, IPC_RMID, 0);	
+	for (size_t j = 0; j < fsize_dishes; j++) {
+                free(washer_dishes[j].type);
+                free(washer_dishes[j].time);
+                free(wiper_dishes[j].type);
+                free(wiper_dishes[j].time);
+        }
+	free(washer_dishes);
+	free(wiper_dishes);
+	free(washer_buf_type);
+	free(wiper_buf_type);
+	free(washer_buf_count);
 	return 0;
 }
