@@ -41,29 +41,11 @@ int main(int argc, char** argv) {
 		if (pid == 0) {
 			sleep(atoi(tokens[token_count-1])); 
 			tokens[token_count - 1] = NULL;
-			/*
-			fixit: зачем вам нужно копирование в отдельный массив params?
-			чем tokens + 1 не подойдет?
-			*/
-			//fixed
 			execvp(tokens[0], tokens);
 			token_count = 0;
 			param_count = 0;
-			//memset(tokens, NULL, len);
 		}
-			/*
-			fixit: у вас как-то странно получается: если процесс, которые вы запустили exec'ом "завис", то
-			вы не запустите следующую задачу из списка вовремя
-			*/
-			//fixed	
-			
 	}
-	/*
-	fixit: допустим ни одна задача не смогла запуститься с помощью exec ...
-	посчитайте сколько раз был вызван calloc и сколько раз вы освободили память ...
-	эти числа должны совпадать
-	*/
-	//fixed
 	free(file_str);
 	free(lines);
 	free(tokens);
