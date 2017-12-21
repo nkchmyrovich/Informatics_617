@@ -24,7 +24,6 @@ int main(int argc, char **argv) {
 	free(string);
 	free(delimiter);
 	free(tokens);
-	system("PAUSE");
 	return 0;
 }
 
